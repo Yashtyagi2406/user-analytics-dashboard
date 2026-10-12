@@ -204,18 +204,20 @@ app.use((err, _req, res, _next) => {
 const PORT = Number(process.env.PORT) || 4000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/user_analytics';
 
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => {
-    console.log(`[db] MongoDB connected: ${MONGODB_URI.replace(/\/\/.*@/, '//***@')}`);
-    app.listen(PORT, () =>
-      console.log(`[api] Listening on http://localhost:${PORT}  (tracker + demo at /tracker.js, /demo.html)`)
-    );
-  })
-  .catch((err) => {
-    console.error('[db] Connection failed:', err.message);
-    process.exit(1);
-  });
+if (require.main === module) {
+  mongoose
+    .connect(MONGODB_URI)
+    .then(() => {
+      console.log(`[db] MongoDB connected: ${MONGODB_URI.replace(/\/\/.*@/, '//***@')}`);
+      app.listen(PORT, () =>
+        console.log(`[api] Listening on http://localhost:${PORT}  (tracker + demo at /tracker.js, /demo.html)`)
+      );
+    })
+    .catch((err) => {
+      console.error('[db] Connection failed:', err.message);
+      process.exit(1);
+    });
+}
 
 // Export for testing
 module.exports = { app, normalise };
