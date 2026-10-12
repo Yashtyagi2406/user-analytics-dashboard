@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Demo Store – Analytics Testbed</title>
+  <meta name="description" content="Demo page for testing the user analytics tracker. Click around to generate events, then open the dashboard to see sessions and heatmaps." />
+  <style>
+    /* ---- Reset & Tokens ---- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --accent:  #f97316;
+      --bg:      #0f0f1a;
+      --surface: #1a1a2e;
+      --card:    #1e1e35;
+      --border:  #2d2d4e;
+      --text:    #e2e8f0;
+      --muted:   #94a3b8;
+      --success: #10b981;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ---- Header ---- */
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    nav { display: flex; gap: 8px; align-items: center; }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all .2s;
+    }
+    nav a:hover { color: var(--text); background: rgba(99,102,241,.15); }
+    .nav-cta {
+      background: var(--primary);
+      color: #fff !important;
+      font-weight: 600;
+    }
+    .nav-cta:hover { background: var(--primary-dark) !important; }
+
+    /* ---- Hero ---- */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,.18) 0%, transparent 70%);
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(99,102,241,.2);
+      border: 1px solid rgba(99,102,241,.4);
+      color: #a5b4fc;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 20px;
+      letter-spacing: .5px;
+    }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; line-height: 1.15; margin-bottom: 16px; }
+    .hero h1 span { background: linear-gradient(90deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: var(--muted); font-size: 16px; max-width: 520px; margin: 0 auto 32px; }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: 10px; font-size: 15px; font-weight: 600;
+      text-decoration: none; cursor: pointer; border: 0;
+      transition: all .2s; white-space: nowrap;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,102,241,.4); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* ---- Products grid ---- */
+    main { max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
+    .section-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .section-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all .25s;
+      cursor: pointer;
+    }
+    .card:hover { transform: translateY(-4px); border-color: rgba(99,102,241,.5); box-shadow: 0 20px 40px rgba(0,0,0,.4); }
+    .card-img {
+      width: 100%; height: 160px; object-fit: cover;
+      background: linear-gradient(135deg, #1e1e35, #2d2d4e);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px;
+    }
+    .card-body { padding: 16px; }
+    .card-badge {
+      display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px;
+      background: rgba(16,185,129,.15); color: var(--success); margin-bottom: 8px;
+    }
+    .card h3 { font-size: 16px; margin-bottom: 4px; }
+    .card .desc { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; }
+    .price { font-size: 18px; font-weight: 700; }
+    .old-price { text-decoration: line-through; color: var(--muted); font-size: 13px; margin-right: 6px; }
+    .add-btn {
+      background: var(--primary); color: #fff; border: 0;
+      padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+    }
+    .add-btn:hover { background: var(--primary-dark); }
+
+    /* ---- Toast ---- */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); padding: 12px 18px; border-radius: 10px;
+      font-size: 14px; font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,.4);
+      transform: translateY(80px); opacity: 0;
+      transition: all .3s; z-index: 100;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ---- SPA navigation section ---- */
+    .nav-links { margin: 40px 0 0; }
+    .nav-links h2 { font-size: 18px; margin-bottom: 12px; }
+    .link-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+    .link-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--text); text-decoration: none;
+      padding: 8px 16px; border-radius: 99px; font-size: 14px;
+      transition: all .2s;
+    }
+    .link-chip:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* ---- Footer ---- */
+    footer {
+      text-align: center; padding: 32px;
+      color: var(--muted); font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--primary); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      header { padding: 0 16px; }
+      .hero { padding: 60px 16px 40px; }
+    }
+  </style>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<header>
+  <div class="logo">⚡ Demo Store</div>
+  <nav>
+    <a href="/demo.html">Home</a>
+    <a href="/demo.html?page=shop">Shop</a>
+    <a href="/demo.html?page=about">About</a>
+    <a href="http://localhost:5173" class="nav-cta" target="_blank" rel="noopener">📊 Dashboard →</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-badge">🔴 Live Tracking Active</div>
+  <h1>Summer Sale<br /><span>Up to 60% Off</span></h1>
+  <p>Click around this page. Every interaction is tracked in real time. Open the dashboard to see your session and the heatmap.</p>
+  <div class="hero-btns">
+    <a href="#products" class="btn btn-primary">🛍 Shop Now</a>
+    <a href="http://localhost:5173" target="_blank" rel="noopener" class="btn btn-outline">📊 View Dashboard</a>
+  </div>
+</section>
+
+<main>
+  <h2 class="section-title" id="products">Featured Products</h2>
+  <p class="section-sub">Click "Add to cart" buttons – they'll show up as click events in the heatmap.</p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-img">👟</div>
+      <div class="card-body">
+        <span class="card-badge">Best Seller</span>
+        <h3>Air Runner Sneakers</h3>
+        <p class="desc">Lightweight mesh upper with responsive cushioning for all-day comfort.</p>
+        <div class="card-footer">
+          <div><span class="old-price">$120</span><span class="price">$59</span></div>
+          <button class="add-btn" onclick="addToCart('Sneakers')">Add to cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-img">🎒</div>
+      <div class="card-body">
+        <span class="card-badge">New</span>
+        <h3>Urban Backpack</h3>
+        <p class="desc">25L capacity, USB charging port, waterproof exterior. Fits 15" laptop.</p>
+        <div class="card-footer">
+          <div><span class="old-price">$75</span><span class="price">$39</span></div>
+          <button class="add-btn" onclick="addToCart('Backpack')">Add to cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-img">⌚</div>
+      <div class="card-body">
+        <span class="card-badge">Limited</span>
+        <h3>Smart Watch Pro</h3>
+        <p class="desc">Heart rate, GPS, 5-day battery. Works with iOS and Android.</p>
+        <div class="card-footer">
+          <div><span class="old-price">$200</span><span class="price">$99</span></div>
+          <button class="add-btn" onclick="addToCart('Watch')">Add to cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-img">🕶️</div>
+      <div class="card-body">
+        <span class="card-badge">Sale</span>
+        <h3>Polarised Sunglasses</h3>
+        <p class="desc">UV400 protection, scratch-resistant lens, spring hinges.</p>
+        <div class="card-footer">
+          <div><span class="old-price">$60</span><span class="price">$25</span></div>
+          <button class="add-btn" onclick="addToCart('Sunglasses')">Add to cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-img">🎧</div>
+      <div class="card-body">
+        <span class="card-badge">Popular</span>
+        <h3>Wireless Headphones</h3>
+        <p class="desc">Active noise cancellation, 40h playback, foldable design.</p>
+        <div class="card-footer">
+          <div><span class="old-price">$250</span><span class="price">$119</span></div>
+          <button class="add-btn" onclick="addToCart('Headphones')">Add to cart</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-img">💻</div>
+      <div class="card-body">
+        <span class="card-badge">Deal</span>
+        <h3>Laptop Stand</h3>
+        <p class="desc">Adjustable aluminium stand, cable management, anti-slip pads.</p>
+        <div class="card-footer">
+          <div><span class="old-price">$50</span><span class="price">$28</span></div>
+          <button class="add-btn" onclick="addToCart('Stand')">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPA-style navigation links to generate different page_url entries -->
+  <div class="nav-links">
+    <h2>Browse by category <span style="color:var(--muted);font-size:14px;font-weight:400">(generates different page URLs for the heatmap)</span></h2>
+    <div class="link-chips">
+      <a href="/demo.html?page=shop" class="link-chip">🛍 All Products</a>
+      <a href="/demo.html?page=clothing" class="link-chip">👕 Clothing</a>
+      <a href="/demo.html?page=electronics" class="link-chip">💡 Electronics</a>
+      <a href="/demo.html?page=accessories" class="link-chip">🧴 Accessories</a>
+      <a href="/demo.html?page=sale" class="link-chip">🔥 Sale</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  © 2024 Demo Store &nbsp;·&nbsp;
+  This page is tracked by <a href="/tracker.js">tracker.js</a> &nbsp;·&nbsp;
+  <a href="http://localhost:5173" target="_blank" rel="noopener">Open Dashboard</a>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+  function addToCart(name) {
+    var toast = document.getElementById('toast');
+    toast.textContent = '🛒 ' + name + ' added to cart!';
+    toast.classList.add('show');
+    setTimeout(function () { toast.classList.remove('show'); }, 2500);
+  }
+</script>
+
+<!-- Analytics tracker – replace with deployed URL after deployment -->
+<script src="/tracker.js" defer></script>
+
+</body>
+</html>
