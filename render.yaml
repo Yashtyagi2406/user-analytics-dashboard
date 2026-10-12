@@ -1,0 +1,16 @@
+# Render deployment config for the backend service
+# https://render.com/docs/render-yaml
+services:
+  - type: web
+    name: user-analytics-backend
+    env: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 4000
+      - key: MONGODB_URI
+        sync: false  # set manually in Render dashboard (Atlas URI)
