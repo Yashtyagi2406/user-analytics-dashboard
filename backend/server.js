@@ -37,6 +37,11 @@ app.use(express.json({
 // Static files: /tracker.js and /demo.html
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Root route: redirect to the demo testbed
+app.get('/', (_req, res) => {
+  res.redirect('/demo.html');
+});
+
 // ── Schema ─────────────────────────────────────────────────────────────────
 const eventSchema = new mongoose.Schema(
   {
